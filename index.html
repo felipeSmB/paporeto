@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>paporetomane</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(120deg, #fff9c4, #fff59d);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow-x: hidden;
+    transition: background 1s;
+    flex-direction: column;
+  }
+
+  h1, p { color: #ff2b6a; transition: opacity 0.5s; }
+  h1 { font-size: 40px; margin-bottom: 20px; }
+  p { font-size: 20px; max-width: 700px; margin-bottom: 15px; line-height: 1.6; }
+
+  button {
+    background-color: #ff2b6a;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 18px;
+    cursor: pointer;
+    margin: 10px;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background-color: #ff5c8d;
+    transform: scale(1.1);
+  }
+
+  .sunflower {
+    position: fixed;
+    font-size: 22px;
+    pointer-events: none;
+    top: -8vh;
+    will-change: transform, opacity;
+  }
+
+  #bigHeart {
+    font-size: 150px;
+    animation: inflateBig 1.5s ease-out forwards;
+    color: #ff2b6a;
+  }
+
+  @keyframes inflateBig {
+    0% { transform: scale(0.1); opacity: 0; }
+    50% { transform: scale(2.5); opacity: 1; }
+    80% { transform: scale(4); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+
+  @keyframes fall {
+    to { transform: translateY(110%) rotate(360deg); opacity: 0; }
+  }
+
+  @media(max-width:600px){
+    h1{font-size:28px;}
+    p{font-size:16px;}
+    button{font-size:16px;padding:12px 20px;}
+  }
+
+  #gameContainer { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  #buttonsGame button { margin:10px; }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <h1 id="text">bonjour</h1>
+  <button id="btn">Avançar</button>
+</div>
+
+<!-- música: só toca no final -->
+<audio id="babyMusic" src="luan.mp3" preload="auto" loop></audio>
+
+<script>
+const container = document.getElementById("container");
+const text = document.getElementById("text");
+const btn = document.getElementById("btn");
+const music = document.getElementById("babyMusic");
+let step = 0;
+
+/* Garante que o áudio pode ser tocado depois (necessário no iPhone) */
+document.addEventListener("touchstart", () => {}, { once: true });
+document.addEventListener("click", () => {}, { once: true });
+
+/* função que move o botão sem sobrepor textos */
+function moveButton() {
+  const btnWidth = btn.offsetWidth;
+  const btnHeight = btn.offsetHeight;
+  const allTextElements = Array.from(container.querySelectorAll("h1, p"));
+  const padding = 20;
+  const maxAttempts = 200;
+  let x = 0, y = 0;
+
+  for (let i = 0; i < maxAttempts; i++) {
+    const maxX = Math.max(0, window.innerWidth - btnWidth - padding);
+    const maxY = Math.max(0, window.innerHeight - btnHeight - padding);
+    x = Math.random() * maxX;
+    y = Math.random() * maxY;
+
+    const overlaps = allTextElements.some(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return false;
+      const noOverlap =
+        (x + btnWidth + padding < rect.left) ||
+        (x > rect.right + padding) ||
+        (y + btnHeight + padding < rect.top) ||
+        (y > rect.bottom + padding);
+      return !noOverlap;
+    });
+
+    if (!overlaps) break;
+  }
+
+  btn.style.position = "absolute";
+  btn.style.left = `${Math.max(0, Math.round(x))}px`;
+  btn.style.top = `${Math.max(0, Math.round(y))}px`;
+}
+
+/* lógica principal do botão */
+btn.addEventListener("click", () => {
+  step++;
+  switch(step){
+    case 1:
+      text.textContent = "atao ta tudo?";
+      break;
+    case 2:
+      text.textContent = "";
+      btn.textContent = "NÃO CLIQUE";
+      btn.style.fontSize = "22px";
+      btn.style.padding = "20px 40px";
+      break;
+    case 3:
+      text.textContent = "eu disse pra não clicar";
+      moveButton();
+      break;
+    case 4:
+      text.textContent = "para de ser curiosa";
+      moveButton();
+      break;
+    case 5:
+      text.textContent = "típico de loira";
+      moveButton();
+      break;
+    case 6:
+      showFinalMessage();
+      break;
+  }
+});
+
+/* animação dos girassóis */
+function explodeSunflowers(){
+  const count = 30;
+  for(let i = 0; i < count; i++){
+    const sun = document.createElement("div");
+    sun.classList.add("sunflower");
+    sun.textContent = "🌻";
+    sun.style.left = (Math.random() * 100) + "vw";
+    sun.style.fontSize = (Math.random()*30 + 14) + "px";
+    const duration = (Math.random()*2 + 3).toFixed(2) + "s";
+    const delay = (Math.random()*0.5).toFixed(2) + "s";
+    sun.style.animation = `fall ${duration} linear ${delay} forwards`;
+    sun.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(sun);
+    setTimeout(()=> sun.remove(), (parseFloat(duration) + parseFloat(delay) + 0.6)*1000);
+  }
+}
+
+/* mensagem final */
+function showFinalMessage(){
+  container.innerHTML = '<div id="bigHeart">🌻</div>';
+  setTimeout(()=> {
+    container.innerHTML = `
+      <div style="max-width: 700px; margin: 0 auto; text-align: center; padding: 20px;
+                  display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <p>parabéns por ser alguém tão forte e resiliente. mesmo diante dos problemas que você tem enfrentado, você consegue manter um sorriso que ilumina tudo ao redor. sua mâe deve ter muito orgulho de você.</p>
+        <p>a forma como muda o ambiente com sua simpatia e carisma é inspiradora.</p>
+        <p>não se cobre tanto. tenha paciência com o tempo e com você mesma, tudo no tempo de Deus se alinha. as coisas boas sempre encontram quem as merece, e você, sem dúvida, merece tudo aquilo que sonha.</p>
+        <p>God lives with you.</p>
+        <p>Jeremias 29:11.</p>
+        <button id="startGameBtn">agora pode clicar</button>
+      </div>
+    `;
+    explodeSunflowers();
+    const startBtn = document.getElementById("startGameBtn");
+    if (startBtn) startBtn.addEventListener("click", startQuizGame);
+  }, 1500);
+}
+
+/* quiz */
+function startQuizGame(){
+  container.innerHTML = `
+    <div id="gameContainer">
+      <h1 id="question"></h1>
+      <div id="buttonsGame"></div>
+    </div>
+  `;
+
+  const questions = [
+    { q: "1 + 1 ?", options: ["2","3"], correct:0 },
+    { q: "3 + 3 ?", options: ["6","7"], correct:0 },
+    { q: "20 + 20 ?", options: ["40","50"], correct:0 },
+    { q: "((99999 * -12345)/6789) + 5555 ?", options:["1000000","-99999"], correct:-1 }
+  ];
+
+  let current = 0;
+  const questionEl = document.getElementById("question");
+  const buttonsDiv = document.getElementById("buttonsGame");
+
+  function showQuestion(){
+    buttonsDiv.innerHTML = "";
+    const qObj = questions[current];
+    questionEl.textContent = qObj.q;
+    qObj.options.forEach((opt,i)=>{
+      const b = document.createElement("button");
+      b.textContent = opt;
+      b.addEventListener("click", ()=> handleAnswer(i));
+      buttonsDiv.appendChild(b);
+    });
+  }
+
+  function handleAnswer(selected){
+    const qObj = questions[current];
+    if (qObj.correct === -1) {
+      current++;
+      endGame();
+      return;
+    }
+    if (selected === qObj.correct) {
+      current++;
+      if (current >= questions.length) endGame();
+      else showQuestion();
+    } else {
+      alert("como tu errou isso");
+    }
+  }
+
+  function endGame(){
+    buttonsDiv.innerHTML = "";
+    questionEl.textContent = "loira burra";
+
+    const advanceContainer = document.createElement("div");
+    advanceContainer.style.marginTop = "20px";
+    advanceContainer.style.textAlign = "center";
+
+    const advanceBtn = document.createElement("button");
+    advanceBtn.textContent = "Avançar";
+    advanceBtn.style.padding = "12px 30px";
+    advanceBtn.style.fontSize = "18px";
+    advanceBtn.style.borderRadius = "30px";
+    advanceBtn.style.backgroundColor = "#ff2b6a";
+    advanceBtn.style.color = "white";
+    advanceBtn.style.border = "none";
+    advanceBtn.style.cursor = "pointer";
+    advanceBtn.addEventListener("click", showBabyImage);
+
+    advanceContainer.appendChild(advanceBtn);
+    buttonsDiv.appendChild(advanceContainer);
+  }
+
+  function showBabyImage(){
+    container.innerHTML = "";
+    const babyContainer = document.createElement("div");
+    babyContainer.style.textAlign = "center";
+    babyContainer.style.display = "flex";
+    babyContainer.style.flexDirection = "column";
+    babyContainer.style.justifyContent = "center";
+    babyContainer.style.alignItems = "center";
+    babyContainer.style.padding = "20px";
+
+    const babyImg = document.createElement("img");
+    babyImg.src = "https://i.pinimg.com/736x/9a/a5/8b/9aa58b2361a3ab217ee15bbd0bfbee50.jpg";
+    babyImg.alt = "Bebê fofo";
+    babyImg.style.maxWidth = "400px";
+    babyImg.style.width = "80%";
+    babyImg.style.borderRadius = "15px";
+
+    babyContainer.appendChild(babyImg);
+    container.appendChild(babyContainer);
+
+    // Música só toca aqui
+    if (music && music.paused) {
+      music.play().catch(()=>{});
+    }
+  }
+
+  showQuestion();
+}
+</script>
+
+</body>
+</html>
